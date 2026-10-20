@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xbx浓度测试</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255,255,255,0.96);
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 440px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        h1 { font-size: 26px; color: #1a1a2e; margin-bottom: 6px; letter-spacing: 1px; }
+        .subtitle { font-size: 14px; color: #888; margin-bottom: 28px; }
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        input:focus { border-color: #e94560; }
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #e94560 0%, #0f3460 100%);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+        button:active { transform: scale(0.98); }
+        .result {
+            margin-top: 24px;
+            padding: 22px 18px;
+            background: #f7f8fc;
+            border-radius: 14px;
+            display: none;
+        }
+        .result.show { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result-name { font-size: 15px; color: #666; margin-bottom: 6px; }
+        .result-percent {
+            font-size: 46px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #e94560 0%, #0f3460 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+        .result-label { font-size: 15px; color: #444; margin-top: 12px; font-weight: 600; line-height: 1.5; }
+        .error { color: #e74c3c; font-size: 14px; margin-top: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚌 xbx浓度测试</h1>
+        <p class="subtitle">输入名字，测测你的 xbx 浓度有多高</p>
+
+        <input type="text" id="nameInput" placeholder="请输入名字..." maxlength="20" autocomplete="off">
+        <button onclick="calculate()">开始测试</button>
+
+        <div class="result" id="result">
+            <div class="result-name" id="resultName"></div>
+            <div class="result-percent" id="resultPercent"></div>
+            <div class="result-label" id="resultLabel"></div>
+        </div>
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        // ====== 隐藏关键词库（不对用户展示） ======
+        const KEYWORDS = ["xbx", "谢百轩", "谢班长", "谢主任", "buson", "xiebaixuan"];
+
+        // ====== 每个等级 3 条随机评价 ======
+        const EVALUATIONS = [
+            { min: 100, texts: [
+                "🏆 完全一致！你就是 xbx 本 x，浓度拉满！",
+                "👑 百分百命中！这个浓度已经无法超越了。",
+                "🎯 精准匹配！xbx 浓度检测仪直接爆表！"
+            ]},
+            { min: 90, texts: [
+                "🔥 浓度爆表！几乎可以确认是 xbx 核心圈成员。",
+                "💥 差一点点就满分，xbx 浓度高得吓人！",
+                "🚀 这浓度也太离谱了，xbx 含量严重超标！"
+            ]},
+            { min: 75, texts: [
+                "⚡ 高度疑似！xbx 浓度相当可观。",
+                "🌟 浓度很高，大概率与 xbx 有密切关联。",
+                "📡 信号强烈，xbx 浓度进入高警戒区间。"
+            ]},
+            { min: 55, texts: [
+                "🌀 中度污染，xbx 浓度不容小觑。",
+                "🌊 有一定浓度的 xbx 成分，值得注意。",
+                "🔍 检测到明显的 xbx 痕迹，浓度中等偏上。"
+            ]},
+            { min: 35, texts: [
+                "🌱 轻度痕迹，xbx 浓度若隐若现。",
+                "🍃 有微弱的 xbx 信号，但还不算明显。",
+                "🌤 浓度偏低，偶尔能捕捉到一点 xbx 气息。"
+            ]},
+            { min: 15, texts: [
+                "💧 微量残留，xbx 浓度几乎可以忽略。",
+                "🌫 只有极淡的 xbx 痕迹，浓度很低。",
+                "❄️ 检测到一丁点 xbx 成分，微乎其微。"
+            ]},
+            { min: 0, texts: [
+                "🫧 基本不含 xbx 成分，纯度很高。",
+                "🌿 未检测到明显 xbx 信号，浓度极低。",
+                "🧊 xbx 浓度趋近于零，保持你的独特性！"
+            ]}
+        ];
+
+        // 编辑距离相似度（0~1）
+        function similarity(a, b) {
+            a = a.toLowerCase();
+            b = b.toLowerCase();
+            if (a === b) return 1;
+            const m = a.length, n = b.length;
+            if (m === 0 || n === 0) return 0;
+
+            const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+            for (let i = 0; i <= m; i++) dp[i][0] = i;
+            for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+            for (let i = 1; i <= m; i++) {
+                for (let j = 1; j <= n; j++) {
+                    dp[i][j] = a[i - 1] === b[j - 1]
+                        ? dp[i - 1][j - 1]
+                        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+                }
+            }
+            return 1 - dp[m][n] / Math.max(m, n);
+        }
+
+        // 计算浓度（内部匹配，不展示匹配词）
+        function getConcentration(name) {
+            let best = 0;
+            for (const kw of KEYWORDS) {
+                const s = similarity(name, kw);
+                if (s > best) best = s;
+            }
+            // 子串包含加成
+            for (const kw of KEYWORDS) {
+                if (name.toLowerCase().includes(kw.toLowerCase()) && kw.length >= 2) {
+                    best = Math.max(best, 0.85 + 0.15 * (kw.length / Math.max(name.length, kw.length)));
+                    if (best > 0.99) best = 1;
+                }
+            }
+            return Math.round(best * 100);
+        }
+
+        // 根据百分比随机取一条评价
+        function getEvaluation(percent) {
+            for (const level of EVALUATIONS) {
+                if (percent >= level.min) {
+                    return level.texts[Math.floor(Math.random() * level.texts.length)];
+                }
+            }
+            return EVALUATIONS[EVALUATIONS.length - 1].texts[0];
+        }
+
+        function calculate() {
+            const input = document.getElementById('nameInput');
+            const name = input.value.trim();
+            const resultBox = document.getElementById('result');
+            const errorBox = document.getElementById('error');
+            errorBox.textContent = '';
+
+            if (!name) {
+                resultBox.classList.remove('show');
+                errorBox.textContent = '请先输入一个名字～';
+                return;
+            }
+
+            const percent = getConcentration(name);
+            const label = getEvaluation(percent);
+
+            document.getElementById('resultName').textContent = '「' + name + '」的 xbx 浓度';
+            document.getElementById('resultPercent').textContent = percent + '%';
+            document.getElementById('resultLabel').textContent = label;
+
+            resultBox.classList.add('show');
+        }
+
+        // 回车键支持
+        document.getElementById('nameInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') calculate();
+        });
+    </script>
+</body>
+</html>
