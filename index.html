@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>zzr含量判别器</title>
+    <title>xbx浓度测试 Pro</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            /* 赛博极客风：深紫到深蓝 */
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -22,7 +21,7 @@
             padding: 40px 30px;
             max-width: 440px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             text-align: center;
         }
         h1 { font-size: 26px; color: #1a1a2e; margin-bottom: 6px; letter-spacing: 1px; }
@@ -38,14 +37,14 @@
             margin-bottom: 16px;
             text-align: center;
         }
-        input:focus { border-color: #6a11cb; }
+        input:focus { border-color: #e94560; }
         button {
             width: 100%;
             padding: 14px;
             font-size: 16px;
             font-weight: 600;
             color: white;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            background: linear-gradient(135deg, #e94560 0%, #0f3460 100%);
             border: none;
             border-radius: 10px;
             cursor: pointer;
@@ -69,7 +68,7 @@
         .result-percent {
             font-size: 46px;
             font-weight: 800;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            background: linear-gradient(135deg, #e94560 0%, #0f3460 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -82,11 +81,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>🧬 zzr含量判别器</h1>
-        <p class="subtitle">测一测你体内的 zzr 纯度有多高</p>
+        <h1>🧪 xbx浓度测试 Pro</h1>
+        <p class="subtitle">多维相似度测算（重合度+长度+笔画）</p>
 
-        <input type="text" id="nameInput" placeholder="请输入名字或词语..." maxlength="20" autocomplete="off">
-        <button onclick="calculate()">开始判别</button>
+        <input type="text" id="nameInput" placeholder="请输入名字..." maxlength="20" autocomplete="off">
+        <button onclick="calculate()">开始测试</button>
 
         <div class="result" id="result">
             <div class="result-name" id="resultName"></div>
@@ -98,23 +97,25 @@
     </div>
 
     <script>
-        // ====== 隐藏标准答案库 ======
-        const KEYWORDS = ["zzr", "周梓瑞", "肘子", "周导", "C.S.boy", "瑞仔"];
+        // ====== 隐藏关键词库 ======
+        const KEYWORDS = ["xbx", "谢百轩", "谢班长", "谢主任", "buson", "xiebaixuan"];
 
-        // ====== 字母笔画映射 ======
+        // ====== 字母笔画映射（用于计算英文的名字笔画） ======
         const LETTER_STROKES = {
             'a': 3, 'b': 2, 'c': 1, 'd': 2, 'e': 4, 'f': 3, 'g': 2, 'h': 3, 'i': 2, 'j': 2, 
             'k': 3, 'l': 1, 'm': 4, 'n': 3, 'o': 1, 'p': 2, 'q': 2, 'r': 2, 's': 1, 't': 2, 
             'u': 1, 'v': 2, 'w': 4, 'x': 2, 'y': 3, 'z': 3
         };
 
-        // 计算总笔画（中文按字数估算，英文按字母笔画累加）
+        // 计算字符串的总笔画（中文按字数估算，英文按字母笔画累加）
         function getTotalStrokes(str) {
             let strokes = 0;
             for (let i = 0; i < str.length; i++) {
                 const char = str[i].toLowerCase();
                 if (/[\u4e00-\u9fa5]/.test(char)) {
-                    strokes += 10; // 汉字估算 10 画
+                    // 简单粗暴：汉字一般平均 8-12 画，这里为了趣味性统一定义为 10 画
+                    // （因为前端无法直接用原生JS获取真实笔画，硬编码会导致代码极其庞大）
+                    strokes += 10; 
                 } else if (LETTER_STROKES[char]) {
                     strokes += LETTER_STROKES[char];
                 }
@@ -154,12 +155,13 @@
             const strokeB = getTotalStrokes(target);
             const strokeDiff = Math.abs(strokeA - strokeB);
             const maxStroke = Math.max(strokeA, strokeB) || 1;
+            // 笔画差距越大，得分越低
             const strokeScore = Math.max(0, 1 - (strokeDiff / maxStroke));
 
             // 综合加权得分
             let finalScore = (overlapScore * 0.4) + (lengthScore * 0.3) + (strokeScore * 0.3);
 
-            // 特殊加成：包含完整关键词
+            // 特殊加成：如果包含了完整的关键词，给予极大的加成
             if (input.toLowerCase().includes(target.toLowerCase())) {
                 finalScore = Math.max(finalScore, 0.92);
             }
@@ -167,7 +169,7 @@
             return Math.min(1, Math.max(0, finalScore));
         }
 
-        // 计算含量（遍历所有标准答案，取最高分）
+        // 计算浓度（遍历所有关键词，取最高分）
         function getConcentration(name) {
             let bestScore = 0;
             let bestTarget = "";
@@ -188,43 +190,15 @@
             };
         }
 
-        // ====== 评价区间（每个区间随机 3 条） ======
+        // ====== 评价区间（保持 3 条随机） ======
         const EVALUATIONS = [
-            { min: 100, texts: [
-                "🏆 完全一致！您就是 zzr 本尊，纯度 100%！", 
-                "👑 百分百命中！这绝对是原汁原味的周梓瑞。", 
-                "🎯 精准匹配！您的 zzr 含量已达理论极值！"
-            ]},
-            { min: 90, texts: [
-                "🔥 浓度爆表！几乎可以确认是 zzr 核心圈成员。", 
-                "💥 差一点点就满分，zzr 含量高得吓人！", 
-                "🚀 周导/瑞仔的气息已经掩盖不住了，严重超标！"
-            ]},
-            { min: 75, texts: [
-                "⚡ 高度疑似！zzr 浓度相当可观。", 
-                "🌟 浓度很高，大概率与 zzr 有密切关联。", 
-                "📡 信号强烈，zzr 浓度进入高警戒区间。"
-            ]},
-            { min: 55, texts: [
-                "🌀 中度污染，zzr 浓度不容小觑。", 
-                "🌊 有一定浓度的 zzr 成分，值得重点观察。", 
-                "🔍 检测到明显的 zzr 痕迹，浓度中等偏上。"
-            ]},
-            { min: 35, texts: [
-                "🌱 轻度痕迹，zzr 浓度若隐若现。", 
-                "🍃 有微弱的 zzr 信号，或许和“肘子”有点缘分。", 
-                "🌤 浓度偏低，偶尔能捕捉到一点 zzr 气息。"
-            ]},
-            { min: 15, texts: [
-                "💧 微量残留，zzr 浓度几乎可以忽略。", 
-                "🌫 只有极淡的 zzr 痕迹，仍是一介凡人。", 
-                "❄️ 检测到一丁点 zzr 成分，微乎其微。"
-            ]},
-            { min: 0, texts: [
-                "🫧 基本不含 zzr 成分，纯度极高。", 
-                "🌿 未检测到 zzr 信号，你是一个纯粹的路人。", 
-                "🧊 zzr 浓度趋近于零，请继续保持你的独特性！"
-            ]}
+            { min: 100, texts: ["🏆 完全一致！你就是 xbx 本 x，浓度拉满！", "👑 百分百命中！这个浓度已经无法超越了。", "🎯 精准匹配！xbx 浓度检测仪直接爆表！"] },
+            { min: 90, texts: ["🔥 浓度爆表！几乎可以确认是 xbx 核心圈成员。", "💥 差一点点就满分，xbx 浓度高得吓人！", "🚀 这浓度也太离谱了，xbx 含量严重超标！"] },
+            { min: 75, texts: ["⚡ 高度疑似！xbx 浓度相当可观。", "🌟 浓度很高，大概率与 xbx 有密切关联。", "📡 信号强烈，xbx 浓度进入高警戒区间。"] },
+            { min: 55, texts: ["🌀 中度污染，xbx 浓度不容小觑。", "🌊 有一定浓度的 xbx 成分，值得注意。", "🔍 检测到明显的 xbx 痕迹，浓度中等偏上。"] },
+            { min: 35, texts: ["🌱 轻度痕迹，xbx 浓度若隐若现。", "🍃 有微弱的 xbx 信号，但还不算明显。", "🌤 浓度偏低，偶尔能捕捉到一点 xbx 气息。"] },
+            { min: 15, texts: ["💧 微量残留，xbx 浓度几乎可以忽略。", "🌫 只有极淡的 xbx 痕迹，浓度很低。", "❄️ 检测到一丁点 xbx 成分，微乎其微。"] },
+            { min: 0, texts: ["🫧 基本不含 xbx 成分，纯度很高。", "🌿 未检测到明显 xbx 信号，浓度极低。", "🧊 xbx 浓度趋近于零，保持你的独特性！"] }
         ];
 
         function getEvaluation(percent) {
@@ -245,18 +219,18 @@
 
             if (!name) {
                 resultBox.classList.remove('show');
-                errorBox.textContent = '请输入要判别的名字～';
+                errorBox.textContent = '请先输入一个名字～';
                 return;
             }
 
             const data = getConcentration(name);
             const label = getEvaluation(data.percent);
 
-            document.getElementById('resultName').textContent = '「' + name + '」的 zzr 含量';
+            document.getElementById('resultName').textContent = '「' + name + '」的 xbx 浓度';
             document.getElementById('resultPercent').textContent = data.percent + '%';
             document.getElementById('resultLabel').textContent = label;
             
-            // 显示维度测算明细
+            // 显示维度测算明细（满足你的计算逻辑展示）
             document.getElementById('resultDebug').innerHTML = 
                 `🔍 <b>测算依据：</b><br>
                  最接近的隐藏特征：${data.matched}<br>
