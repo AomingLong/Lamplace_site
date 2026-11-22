@@ -1,275 +1,465 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>zzr含量判别器</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            /* 赛博极客风：深紫到深蓝 */
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .container {
-            background: rgba(255,255,255,0.96);
-            border-radius: 20px;
-            padding: 40px 30px;
-            max-width: 440px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-            text-align: center;
-        }
-        h1 { font-size: 26px; color: #1a1a2e; margin-bottom: 6px; letter-spacing: 1px; }
-        .subtitle { font-size: 14px; color: #888; margin-bottom: 28px; }
-        input {
-            width: 100%;
-            padding: 14px 16px;
-            font-size: 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            outline: none;
-            transition: border-color 0.2s;
-            margin-bottom: 16px;
-            text-align: center;
-        }
-        input:focus { border-color: #6a11cb; }
-        button {
-            width: 100%;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: 600;
-            color: white;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
-        }
-        button:hover { opacity: 0.9; }
-        button:active { transform: scale(0.98); }
-        .result {
-            margin-top: 24px;
-            padding: 22px 18px;
-            background: #f7f8fc;
-            border-radius: 14px;
-            display: none;
-        }
-        .result.show { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .result-name { font-size: 15px; color: #666; margin-bottom: 6px; }
-        .result-percent {
-            font-size: 46px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1.1;
-        }
-        .result-label { font-size: 15px; color: #444; margin-top: 12px; font-weight: 600; line-height: 1.5; }
-        .result-debug { font-size: 12px; color: #999; margin-top: 15px; text-align: left; padding-top: 10px; border-top: 1px dashed #ddd;}
-        .error { color: #e74c3c; font-size: 14px; margin-top: 12px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎂 生日贺卡 · 羽毛球·网球·数学</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(145deg, #0b2b3b 0%, #1c4e6f 100%);
+      font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* 羽毛球 & 网球 漂浮装饰 */
+    .floating-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .shuttlecock, .tennis-ball, .math-symbol {
+      position: absolute;
+      opacity: 0.2;
+      font-size: 2.6rem;
+      user-select: none;
+      animation: float 14s infinite ease-in-out;
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.3));
+    }
+
+    .math-symbol {
+      font-size: 3.2rem;
+      font-weight: 800;
+      color: #ffd966;
+      font-family: 'Courier New', monospace;
+      animation-duration: 18s;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0) rotate(0deg) scale(1); }
+      50% { transform: translateY(-28px) rotate(8deg) scale(1.08); }
+      100% { transform: translateY(0) rotate(0deg) scale(1); }
+    }
+
+    /* 主卡片 */
+    .card {
+      position: relative;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 48px;
+      padding: 2rem 2rem 2.2rem;
+      max-width: 720px;
+      width: 100%;
+      box-shadow: 0 30px 45px -15px rgba(0, 0, 0, 0.6),
+                  inset 0 1px 4px rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      text-align: center;
+      transition: transform 0.3s ease;
+      animation: cardPop 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+    }
+
+    @keyframes cardPop {
+      0% { opacity: 0; transform: scale(0.92); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* 三元素图标区 */
+    .sport-math-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.8rem;
+      margin-bottom: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .icon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 2.8rem;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 12px 18px 6px;
+      border-radius: 40px;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      transition: all 0.25s;
+      animation: iconWiggle 4s infinite alternate;
+    }
+
+    .icon-item:hover {
+      background: rgba(255, 215, 0, 0.15);
+      transform: scale(1.03);
+    }
+
+    @keyframes iconWiggle {
+      0% { transform: rotate(-2deg); }
+      100% { transform: rotate(2deg); }
+    }
+
+    .icon-label {
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #cfe7ff;
+      font-weight: 500;
+      background: rgba(0, 20, 40, 0.4);
+      padding: 3px 10px;
+      border-radius: 30px;
+    }
+
+    /* 主标题 */
+    .birthday-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin: 0.2rem 0 0.2rem;
+      background: linear-gradient(135deg, #ffe99a, #ffc857, #ffad2e);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 20px rgba(255, 190, 40, 0.5);
+      line-height: 1.2;
+    }
+
+    .subhead {
+      font-size: 1.15rem;
+      color: #e2f0ff;
+      font-weight: 400;
+      background: rgba(0, 30, 50, 0.6);
+      display: inline-block;
+      padding: 0.35rem 1.8rem;
+      border-radius: 100px;
+      backdrop-filter: blur(5px);
+      margin-bottom: 1.8rem;
+      border: 1px solid rgba(255, 255, 200, 0.3);
+      letter-spacing: 0.5px;
+    }
+
+    /* 动态数学公式区 */
+    .equation-box {
+      background: rgba(10, 30, 45, 0.7);
+      border-radius: 30px;
+      padding: 1rem 1.2rem;
+      margin: 1.2rem 0 1.5rem;
+      border-left: 6px solid #ffd966;
+      border-right: 6px solid #b3d9ff;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      font-family: 'Courier New', 'Fira Code', monospace;
+      font-weight: 600;
+      color: #f0f9ff;
+      transition: 0.3s;
+      word-break: break-word;
+      animation: glowPulse 3s infinite alternate;
+    }
+
+    @keyframes glowPulse {
+      0% { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 10px rgba(255, 215, 0, 0.2); }
+      100% { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.5); }
+    }
+
+    .math-line {
+      font-size: 1.1rem;
+      margin: 0.35rem 0;
+    }
+
+    .math-line span.highlight {
+      background: #ffd966;
+      color: #0a1e2b;
+      padding: 2px 10px;
+      border-radius: 30px;
+      font-weight: 700;
+    }
+
+    /* 贺卡祝福语 */
+    .message {
+      font-size: 1.35rem;
+      color: #fff6e0;
+      line-height: 1.6;
+      margin: 1.5rem 0 1.8rem;
+      padding: 0 0.5rem;
+      font-weight: 400;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .message .friend-name {
+      font-weight: 800;
+      color: #ffd966;
+      background: rgba(255, 215, 0, 0.15);
+      padding: 0 8px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+
+    /* 网球 & 羽毛球 装饰按钮/互动 */
+    .ball-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .ball {
+      cursor: pointer;
+      transition: transform 0.2s, filter 0.2s;
+      filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.5));
+      animation: bounce 2.2s infinite;
+      font-size: 2.6rem;
+      line-height: 1;
+    }
+
+    .ball:hover {
+      transform: scale(1.15) rotate(3deg);
+      filter: drop-shadow(0 8px 12px rgba(255, 215, 0, 0.6));
+    }
+
+    .tennis {
+      animation-delay: 0s;
+    }
+    .shuttle {
+      animation-delay: 0.4s;
+    }
+    .math-icon {
+      animation-delay: 0.8s;
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: #b3e4ff;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* 鼠标点击小惊喜 */
+    .click-note {
+      font-size: 0.8rem;
+      color: #93b7d0;
+      margin-top: 0.8rem;
+      letter-spacing: 0.5px;
+      opacity: 0.8;
+    }
+
+    /* 页脚 */
+    .footer {
+      margin-top: 1rem;
+      font-size: 0.78rem;
+      color: #9bb8cf;
+      display: flex;
+      justify-content: center;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 1rem;
+    }
+
+    /* 响应式 */
+    @media (max-width: 500px) {
+      .card { padding: 1.5rem 1rem; }
+      .birthday-title { font-size: 2.6rem; }
+      .icon-item { font-size: 2rem; padding: 8px 12px; }
+      .message { font-size: 1.1rem; }
+      .math-line { font-size: 0.9rem; }
+      .ball { font-size: 2rem; }
+      .subhead { font-size: 0.9rem; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🍗 zzr含量判别器</h1>
-        <p class="subtitle">测一测你体内的 zzr 纯度有多高</p>
+  <!-- 漂浮背景元素 (羽毛球、网球、数学符号) -->
+  <div class="floating-bg">
+    <div class="shuttlecock" style="top: 8%; left: 5%; animation-delay: 0s;">🏸</div>
+    <div class="tennis-ball" style="top: 18%; right: 8%; animation-delay: 1.2s;">🎾</div>
+    <div class="math-symbol" style="top: 70%; left: 12%; animation-delay: 0.7s;">∑</div>
+    <div class="shuttlecock" style="bottom: 10%; right: 15%; animation-delay: 2.3s;">🏸</div>
+    <div class="tennis-ball" style="bottom: 25%; left: 20%; animation-delay: 0.4s;">🎾</div>
+    <div class="math-symbol" style="top: 40%; right: 22%; animation-delay: 1.8s;">π</div>
+    <div class="math-symbol" style="bottom: 18%; right: 40%; animation-delay: 3.1s; font-size: 2.8rem;">∞</div>
+    <div class="shuttlecock" style="top: 55%; left: 88%; animation-delay: 1.5s;">🏸</div>
+    <div class="tennis-ball" style="top: 80%; left: 70%; animation-delay: 2.8s;">🎾</div>
+  </div>
 
-        <input type="text" id="nameInput" placeholder="请输入名字或词语..." maxlength="20" autocomplete="off">
-        <button onclick="calculate()">开始判别</button>
-
-        <div class="result" id="result">
-            <div class="result-name" id="resultName"></div>
-            <div class="result-percent" id="resultPercent"></div>
-            <div class="result-label" id="resultLabel"></div>
-            <div class="result-debug" id="resultDebug"></div>
-        </div>
-        <div class="error" id="error"></div>
+  <!-- 主贺卡 -->
+  <main class="card">
+    <!-- 运动+数学图标区 -->
+    <div class="sport-math-row">
+      <div class="icon-item">
+        <span>🏸</span>
+        <span class="icon-label">羽毛球</span>
+      </div>
+      <div class="icon-item">
+        <span>🎾</span>
+        <span class="icon-label">网球</span>
+      </div>
+      <div class="icon-item">
+        <span>📐</span>
+        <span class="icon-label">数学</span>
+      </div>
     </div>
 
-    <script>
-        // ====== 隐藏标准答案库 ======
-        const KEYWORDS = ["zzr", "周梓瑞", "肘子", "周导", "C.S.boy", "瑞仔"];
+    <!-- 主标题 -->
+    <h1 class="birthday-title">HAPPY BIRTHDAY</h1>
+    <div class="subhead">🎉 致我超厉害的朋友 🎉</div>
 
-        // ====== 字母笔画映射 ======
-        const LETTER_STROKES = {
-            'a': 3, 'b': 2, 'c': 1, 'd': 2, 'e': 4, 'f': 3, 'g': 2, 'h': 3, 'i': 2, 'j': 2, 
-            'k': 3, 'l': 1, 'm': 4, 'n': 3, 'o': 1, 'p': 2, 'q': 2, 'r': 2, 's': 1, 't': 2, 
-            'u': 1, 'v': 2, 'w': 4, 'x': 2, 'y': 3, 'z': 3
-        };
+    <!-- 数学与运动结合的动态公式 -->
+    <div class="equation-box">
+      <div class="math-line">🏸 羽毛球轨迹 = <span class="highlight">∫ 力度 · dt</span> + 快乐常数</div>
+      <div class="math-line">🎾 网球旋转 = <span class="highlight">2π · 激情 / 半径</span> + 友谊系数</div>
+      <div class="math-line">📐 生日定理: <span class="highlight">幸福 = (热爱 + 陪伴) ^ 时光</span></div>
+    </div>
 
-        // 计算总笔画（中文按字数估算，英文按字母笔画累加）
-        function getTotalStrokes(str) {
-            let strokes = 0;
-            for (let i = 0; i < str.length; i++) {
-                const char = str[i].toLowerCase();
-                if (/[\u4e00-\u9fa5]/.test(char)) {
-                    strokes += 10; // 汉字估算 10 画
-                } else if (LETTER_STROKES[char]) {
-                    strokes += LETTER_STROKES[char];
-                }
-            }
-            return strokes;
-        }
+    <!-- 祝福语 (可自定义朋友名字) -->
+    <div class="message">
+      <span class="friend-name">亲爱的朋友</span>，<br>
+      祝你生日快乐！<br>
+      愿你的羽毛球永远<strong>扣杀</strong>精准，<br>
+      网球<strong>ACE</strong>连连，数学<strong>证明</strong>题全都得证！<br>
+      🎂 今天你是最闪亮的质数 🎂
+    </div>
 
-        // 计算重合字符数（去重后）
-        function getOverlapCount(a, b) {
-            const setA = new Set(a.toLowerCase().split(''));
-            const setB = new Set(b.toLowerCase().split(''));
-            let count = 0;
-            for (const char of setA) {
-                if (setB.has(char)) count++;
-            }
-            return count;
-        }
+    <!-- 可点击的网球/羽毛球/数学图标 (小互动) -->
+    <div class="ball-row">
+      <div class="ball tennis" title="点击网球有惊喜" onclick="playSoundAndAlert('tennis')">🎾</div>
+      <div class="ball shuttle" title="点击羽毛球有惊喜" onclick="playSoundAndAlert('shuttle')">🏸</div>
+      <div class="ball math-icon" title="点击数学符号有惊喜" onclick="playSoundAndAlert('math')">∑</div>
+    </div>
+    <div class="click-note">👆 点击小图标，接收幸运数学公式！</div>
 
-        // ====== 核心算法：多维度相似度计算 ======
-        function similarityAdvanced(input, target) {
-            if (input === target) return 1.0; // 完全一致直接满分
+    <!-- 底部小字 -->
+    <div class="footer">
+      <span>🏸 羽毛球</span>
+      <span>🎾 网球</span>
+      <span>📐 数学</span>
+      <span>❤️ 友谊</span>
+    </div>
+  </main>
 
-            const lenA = input.length;
-            const lenB = target.length;
-            
-            // 维度 1：重合字符相似度 (权重 40%)
-            const overlap = getOverlapCount(input, target);
-            const maxLen = Math.max(lenA, lenB);
-            const overlapScore = maxLen === 0 ? 0 : (overlap / maxLen);
+  <script>
+    // 简单的音效/弹窗互动（为了不依赖外部文件，使用Web Audio API生成一个短促的“叮”声）
+    function playTone(frequency, duration = 0.15) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = frequency;
+        gain.gain.value = 0.1;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+        osc.stop(ctx.currentTime + duration);
+        // 关闭上下文以释放资源（适当延迟）
+        setTimeout(() => ctx.close(), 300);
+      } catch (e) {
+        // 静默失败，不影响体验
+      }
+    }
 
-            // 维度 2：长度相似度 (权重 30%)
-            const lenDiff = Math.abs(lenA - lenB);
-            const lengthScore = maxLen === 0 ? 0 : Math.max(0, 1 - (lenDiff / maxLen));
+    // 随机数学/运动祝福语
+    const messages = {
+      tennis: [
+        '🎾 网球定理：快乐 = 2π × 旋转！',
+        '🎾 ACE！祝你人生发球局全部得分！',
+        '🎾 网前小球，也挡不住你的好运！',
+        '🎾 正手反手，都是幸福之手！'
+      ],
+      shuttle: [
+        '🏸 羽毛球公式：扣杀 = 力量 × 角度²',
+        '🏸 高远球划出完美抛物线，生日快乐！',
+        '🏸 网前搓球，搓出365天好运！',
+        '🏸 跳杀！把烦恼全部扣出界外！'
+      ],
+      math: [
+        '📐 拉格朗日定理：在你生日这天，快乐存在唯一极大值！',
+        '📐 欧拉恒等式：e^(iπ) + 1 = 0，但你的快乐 = 无穷大',
+        '📐 由归纳法可证：你每一天都更闪耀！',
+        '📐 微分你的烦恼，积分你的快乐，生日快乐！'
+      ]
+    };
 
-            // 维度 3：笔画数相似度 (权重 30%)
-            const strokeA = getTotalStrokes(input);
-            const strokeB = getTotalStrokes(target);
-            const strokeDiff = Math.abs(strokeA - strokeB);
-            const maxStroke = Math.max(strokeA, strokeB) || 1;
-            const strokeScore = Math.max(0, 1 - (strokeDiff / maxStroke));
+    function playSoundAndAlert(type) {
+      // 根据类型播放不同音高
+      if (type === 'tennis') {
+        playTone(880, 0.12);  // A5
+      } else if (type === 'shuttle') {
+        playTone(660, 0.12);  // E5
+      } else {
+        playTone(1046.50, 0.1); // C6
+      }
 
-            // 综合加权得分
-            let finalScore = (overlapScore * 0.4) + (lengthScore * 0.3) + (strokeScore * 0.3);
+      // 随机选取一句祝福
+      const pool = messages[type] || messages.math;
+      const randomMsg = pool[Math.floor(Math.random() * pool.length)];
+      
+      // 使用一个轻量的toast效果代替alert（更优雅），也可以用alert简单展示
+      // 为了保留可玩性，这里创建一个浮动小提示，不打断体验
+      showToast(randomMsg);
+    }
 
-            // 特殊加成：包含完整关键词
-            if (input.toLowerCase().includes(target.toLowerCase())) {
-                finalScore = Math.max(finalScore, 0.92);
-            }
+    // 简单的toast消息
+    function showToast(text) {
+      // 移除之前的toast
+      const oldToast = document.querySelector('.custom-toast');
+      if (oldToast) oldToast.remove();
 
-            return Math.min(1, Math.max(0, finalScore));
-        }
+      const toast = document.createElement('div');
+      toast.className = 'custom-toast';
+      toast.textContent = text;
+      toast.style.position = 'fixed';
+      toast.style.bottom = '30px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.background = 'rgba(0, 0, 0, 0.8)';
+      toast.style.color = '#ffd966';
+      toast.style.padding = '12px 28px';
+      toast.style.borderRadius = '60px';
+      toast.style.fontSize = '1.1rem';
+      toast.style.fontWeight = '600';
+      toast.style.backdropFilter = 'blur(10px)';
+      toast.style.border = '1px solid #ffd966';
+      toast.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
+      toast.style.zIndex = '9999';
+      toast.style.transition = 'opacity 0.3s';
+      toast.style.letterSpacing = '0.5px';
+      toast.style.pointerEvents = 'none';
+      toast.style.maxWidth = '90vw';
+      toast.style.textAlign = 'center';
+      toast.style.fontFamily = 'Segoe UI, sans-serif';
 
-        // 计算含量（遍历所有标准答案，取最高分）
-        function getConcentration(name) {
-            let bestScore = 0;
-            let bestTarget = "";
-            
-            for (const kw of KEYWORDS) {
-                const score = similarityAdvanced(name, kw);
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestTarget = kw;
-                }
-            }
+      document.body.appendChild(toast);
+      
+      // 自动消失
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 400);
+      }, 2000);
+    }
 
-            return { 
-                percent: Math.round(bestScore * 100), 
-                matched: bestTarget,
-                inputStrokes: getTotalStrokes(name),
-                targetStrokes: getTotalStrokes(bestTarget)
-            };
-        }
+    // 再加一点小彩蛋: 在页面任何地方点击都可触发随机飘落的小元素? 可以不做，保持简洁。
 
-        // ====== 评价区间（每个区间随机 3 条） ======
-        const EVALUATIONS = [
-            { min: 100, texts: [
-                "🏆 完全一致！您就是周导本人，纯度 100%！", 
-                "👑 百分百命中！这绝对是原汁原味的周梓瑞。", 
-                "🎯 精准匹配！您的 zzr 含量已达理论极值！"
-            ]},
-            { min: 90, texts: [
-                "🔥 浓度爆表！几乎可以确认是 zzr 身边人了。", 
-                "💥 差一点点就满分，zzr 含量高得吓人！", 
-                "🚀 瑞仔的气息已经掩盖不住了，严重超标！"
-            ]},
-            { min: 75, texts: [
-                "⚡ 高度疑似！zzr 浓度相当可观。", 
-                "🌟 浓度很高，大概率与 zzr 有密切关联。", 
-                "📡 信号强烈，zzr 浓度进入高警戒区间。"
-            ]},
-            { min: 55, texts: [
-                "🌀 中度污染，zzr 浓度不容小觑。", 
-                "🌊 有一定浓度的 zzr 成分，值得重点观察。", 
-                "🔍 检测到明显的 zzr 痕迹，浓度中等偏上。"
-            ]},
-            { min: 35, texts: [
-                "🌱 轻度痕迹，zzr 浓度若隐若现。", 
-                "🍃 有微弱的 zzr 信号，或许和“肘子”有点缘分。", 
-                "🌤 浓度偏低，偶尔能捕捉到一点 zzr 气息。"
-            ]},
-            { min: 15, texts: [
-                "💧 微量残留，zzr 浓度几乎可以忽略。", 
-                "🌫 只有极淡的 zzr 痕迹，仍是一介凡人。", 
-                "❄️ 检测到一丁点 zzr 成分，微乎其微。"
-            ]},
-            { min: 0, texts: [
-                "🫧 基本不含 zzr 成分，纯度极高。", 
-                "🌿 未检测到 zzr 信号，你是一个纯粹的路人。", 
-                "🧊 zzr 浓度趋近于零，请继续保持你的独特性！"
-            ]}
-        ];
-
-        function getEvaluation(percent) {
-            for (const level of EVALUATIONS) {
-                if (percent >= level.min) {
-                    return level.texts[Math.floor(Math.random() * level.texts.length)];
-                }
-            }
-            return EVALUATIONS[EVALUATIONS.length - 1].texts[0];
-        }
-
-        function calculate() {
-            const input = document.getElementById('nameInput');
-            const name = input.value.trim();
-            const resultBox = document.getElementById('result');
-            const errorBox = document.getElementById('error');
-            errorBox.textContent = '';
-
-            if (!name) {
-                resultBox.classList.remove('show');
-                errorBox.textContent = '请输入要判别的名字～';
-                return;
-            }
-
-            const data = getConcentration(name);
-            const label = getEvaluation(data.percent);
-
-            document.getElementById('resultName').textContent = '「' + name + '」的 zzr 含量';
-            document.getElementById('resultPercent').textContent = data.percent + '%';
-            document.getElementById('resultLabel').textContent = label;
-            
-            // 显示维度测算明细
-            document.getElementById('resultDebug').innerHTML = 
-                `🔍 <b>测算依据：</b><br>
-                 最接近的隐藏特征：${data.matched}<br>
-                 你的输入总笔画/字母数：${data.inputStrokes}<br>
-                 目标特征总笔画/字母数：${data.targetStrokes}`;
-
-            resultBox.classList.add('show');
-        }
-
-        // 回车键支持
-        document.getElementById('nameInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') calculate();
-        });
-    </script>
+    // 初始化时播放一个欢迎音(可选，但可能被浏览器禁止自动播放，所以不添加自动播放)
+    // 页面加载时打印友好提示
+    console.log('🎂 生日快乐！羽毛球·网球·数学 贺卡已加载');
+  </script>
 </body>
 </html>
