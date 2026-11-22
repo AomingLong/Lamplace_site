@@ -321,7 +321,7 @@
       const FLOOR_BOUNCE = 0.3;    // 撞地板反弹保留30%速度 (衰减70%)
       const GRAVITY = 0.25;        // 重力
       
-      const HIT_RADIUS = 70;       // 击球范围
+      const HIT_RADIUS = 30;       // 击球范围：基本要拍到球（球半径20 + 少量余量）才触发
       const SWING_THRESHOLD = 5;   // 挥拍速度阈值
 
       // === 底部边界：离屏幕最底部留出距离 ===
@@ -382,8 +382,8 @@
 
       // === 烟花生成函数 ===
       function spawnFirework() {
-        // 随机生成 5~8 个烟花粒子（数量比之前减少一半左右）
-        const count = Math.floor(Math.random() * 4) + 5;
+        // 每次随机生成 3~6 个烟花粒子（更克制，不糊屏）
+        const count = Math.floor(Math.random() * 4) + 3;
         // 随机中心点（避开最边缘）
         const centerX = Math.random() * (window.innerWidth - 200) + 100;
         const centerY = Math.random() * (window.innerHeight - 200) + 100;
