@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎂 生日贺卡 · 羽毛球·网球·数学</title>
+  <title>🎂 ℋ𝒶𝓅𝓅𝓎 ℬ𝒾𝓇𝓉𝒽𝒹𝒶𝓎 🎂</title>
   <style>
     * {
       margin: 0;
@@ -126,9 +129,11 @@
     /* 主标题 */
     .birthday-title {
       font-size: 3.5rem;
-      font-weight: 800;
+      font-weight: 700;
       letter-spacing: 2px;
       margin: 0.2rem 0 0.2rem;
+      font-family: 'Playfair Display', 'Times New Roman', serif;
+      font-style: italic;
       background: linear-gradient(135deg, #ffe99a, #ffc857, #ffad2e);
       -webkit-background-clip: text;
       background-clip: text;
@@ -280,6 +285,12 @@
       .ball { font-size: 2rem; }
       .subhead { font-size: 0.9rem; }
     }
+        /* 飘落元素样式，必须绝对定位且不能影响页面尺寸 */
+    .falling-emoji {
+      position: fixed !important;
+      pointer-events: none !important;
+      will-change: transform, opacity;
+    }
   </style>
 </head>
 <body>
@@ -316,7 +327,7 @@
 
     <!-- 主标题 -->
     <h1 class="birthday-title">HAPPY BIRTHDAY</h1>
-    <div class="subhead">🎉 致我超厉害的朋友 🎉</div>
+    <div class="subhead">🎉 To：Master 陈子木 🎉</div>
 
     <!-- 数学与运动结合的动态公式 -->
     <div class="equation-box">
@@ -327,11 +338,10 @@
 
     <!-- 祝福语 (可自定义朋友名字) -->
     <div class="message">
-      <span class="friend-name">亲爱的朋友</span>，<br>
-      祝你生日快乐！<br>
+      <span class="friend-name">可观测宇宙内最强的大师</span>，<br>
+      祝你18岁生日快乐！<br>
       愿你的羽毛球永远<strong>扣杀</strong>精准，<br>
       网球<strong>ACE</strong>连连，数学<strong>证明</strong>题全都得证！<br>
-      🎂 今天你是最闪亮的质数 🎂
     </div>
 
     <!-- 可点击的网球/羽毛球/数学图标 (小互动) -->
@@ -461,5 +471,74 @@
     // 页面加载时打印友好提示
     console.log('🎂 生日快乐！羽毛球·网球·数学 贺卡已加载');
   </script>
+      // ===== 🎉 彩蛋：页面任意点击触发随机飘落元素 =====
+    (function() {
+      // 可飘落的元素池
+      const emojis = ['🏸', '🎾', '📐', '∑', 'π', '∞', '✨', '❤️', '🎂', '🎉'];
+      
+      // 点击事件
+      document.addEventListener('click', function(e) {
+        // 如果点击的是可交互的按钮（比如卡片上的小球），就不触发彩蛋，避免干扰
+        if (e.target.closest('.ball') || e.target.closest('.wax-seal') || e.target.closest('.envelope-overlay')) {
+          return;
+        }
+
+        // 每次点击随机爆发 6 ~ 12 个元素
+        const count = Math.floor(Math.random() * 7) + 6;
+        
+        for (let i = 0; i < count; i++) {
+          createFallingElement(e.clientX, e.clientY);
+        }
+      });
+
+      function createFallingElement(x, y) {
+        const el = document.createElement('div');
+        el.className = 'falling-emoji';
+        
+        // 随机选取一个图标
+        el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        
+        // 基础样式
+        el.style.position = 'fixed';
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        el.style.fontSize = (Math.random() * 1.5 + 1.2) + 'rem'; // 1.2rem ~ 2.7rem
+        el.style.pointerEvents = 'none'; // 不让它挡住鼠标事件
+        el.style.zIndex = '9999';
+        el.style.userSelect = 'none';
+        
+        // 随机偏移（让它们从点击点稍微散开）
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * 80 + 20;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        
+        // 随机旋转和飘落参数
+        const rotStart = Math.random() * 360;
+        const rotEnd = rotStart + (Math.random() * 360 - 180);
+        const fallY = window.innerHeight - y + 100; // 掉落到屏幕最底部
+        const fallX = (Math.random() - 0.5) * 200; // 飘落时左右偏移
+        const duration = Math.random() * 1.5 + 1.5; // 1.5s ~ 3s
+        
+        // 初始状态
+        el.style.transform = `translate(0, 0) rotate(${rotStart}deg) scale(0.5)`;
+        el.style.opacity = '1';
+        el.style.transition = `transform ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity ${duration}s ease-in`;
+        
+        document.body.appendChild(el);
+        
+        // 使用 requestAnimationFrame 触发过渡动画
+        requestAnimationFrame(() => {
+          // 先散开，再落下
+          el.style.transform = `translate(${tx + fallX}px, ${fallY}px) rotate(${rotEnd}deg) scale(1)`;
+          el.style.opacity = '0';
+        });
+        
+        // 动画结束后移除 DOM
+        setTimeout(() => {
+          el.remove();
+        }, duration * 1000 + 100);
+      }
+    })();
 </body>
 </html>
