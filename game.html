@@ -1,0 +1,534 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏸 打一场 · Badminton</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(120% 90% at 50% 0%, #1d5578 0%, #123a52 45%, #0a2331 100%);
+      font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      position: relative;
+      overflow: hidden;
+      cursor: none;            /* 用球拍表情当指针 */
+      user-select: none;
+    }
+
+    /* ===== 球拍指针 ===== */
+    #custom-cursor {
+      position: fixed; top: 0; left: 0;
+      width: 50px; height: 50px; font-size: 42px; line-height: 50px; text-align: center;
+      pointer-events: none; z-index: 99999;
+      transform-origin: 30% 70%;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,.6));
+      will-change: transform;
+    }
+
+    /* ===== 羽毛球 ===== */
+    #interactive-shuttle {
+      position: fixed; top: 0; left: 0;
+      width: 40px; height: 40px;
+      pointer-events: none; z-index: 99998;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.5));
+      will-change: transform;
+    }
+    .shuttle-feather {
+      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+      width: 24px; height: 22px; background: #f0f4f8;
+      clip-path: polygon(20% 0, 80% 0, 100% 100%, 0% 100%);
+      border-radius: 4px 4px 0 0; box-shadow: inset 0 -4px 6px rgba(0,0,0,.1);
+    }
+    .shuttle-feather::after {
+      content: ''; position: absolute; inset: 0;
+      background: repeating-linear-gradient(90deg, transparent, transparent 5px, rgba(180,190,200,.4) 5px, rgba(180,190,200,.4) 6px);
+      clip-path: polygon(20% 0, 80% 0, 100% 100%, 0% 100%);
+    }
+    .shuttle-cork {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 18px; height: 16px;
+      background: radial-gradient(circle at 30% 30%, #fff, #e0e0e0);
+      border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+      border: 2px solid #c0392b; box-shadow: 0 2px 4px rgba(0,0,0,.4); z-index: 2;
+    }
+
+    /* ===== 烟花 ===== */
+    .firework-particle {
+      position: fixed !important; top: 0; left: 0;
+      pointer-events: none; z-index: 99997; user-select: none;
+      will-change: transform, opacity; font-size: 1.5rem;
+    }
+
+    /* ===== 背景漂浮装饰 ===== */
+    .floating-bg { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+    .floating-bg .deco { position: absolute; opacity: .12; font-size: 2.6rem; animation: float 14s infinite ease-in-out; }
+    .math-symbol { font-size: 3.2rem; font-weight: 800; color: #ffd966; font-family: 'Courier New', monospace; }
+    @keyframes float {
+      0% { transform: translateY(0) rotate(0deg) scale(1); }
+      50% { transform: translateY(-28px) rotate(8deg) scale(1.08); }
+      100% { transform: translateY(0) rotate(0deg) scale(1); }
+    }
+
+    /* ===== 地面线（球的下边界）===== */
+    .ground {
+      position: fixed; left: 0; right: 0;
+      bottom: var(--floor-gap, 96px);
+      height: 1px; z-index: 3; pointer-events: none;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.16) 20%, rgba(255,255,255,.16) 80%, rgba(255,255,255,0) 100%);
+      box-shadow: 0 0 12px rgba(180,220,255,.25);
+    }
+
+    /* ===== 球网 =====
+       真实羽毛球网：立柱高 1.55m，网布纵向深度 0.76m，顶部白色网带 7.5cm
+       → 网布占 0.76/1.55 ≈ 49.03%（有碰撞），网布下方 ≈ 50.97%（无碰撞，球可穿过）
+       → 顶部网带 0.075/1.55 ≈ 4.84%
+    */
+    #badminton-net {
+      position: fixed;
+      left: 50%; margin-left: -2px;
+      bottom: var(--floor-gap, 96px);
+      width: 4px;
+      height: var(--net-h, 260px);
+      z-index: 5;
+      pointer-events: none;
+      /* 上 49.03% 是网布（实体），下面直接透明 */
+      background: linear-gradient(180deg,
+        rgba(255,255,255,.98) 0%,
+        rgba(255,255,255,.98) 49.03%,
+        rgba(255,255,255,0) 49.03%,
+        rgba(255,255,255,0) 100%);
+      filter: drop-shadow(0 0 6px rgba(255,255,255,.45));
+    }
+    /* 顶部白色网带（比网布略宽一点点） */
+    #badminton-net::before {
+      content: "";
+      position: absolute; left: -2px; top: 0;
+      width: 8px;
+      height: calc(var(--net-h, 260px) * 0.0484);
+      background: #ffffff;
+      border-radius: 2px;
+      box-shadow: 0 0 10px rgba(255,255,255,.75);
+    }
+    /* 网布下方的极淡虚线：只提示"网所在的平面"，没有碰撞 */
+    #badminton-net::after {
+      content: "";
+      position: absolute; left: 50%; top: 49.03%; bottom: 0;
+      width: 2px; margin-left: -1px;
+      background: repeating-linear-gradient(180deg,
+        rgba(255,255,255,.14) 0 6px, rgba(255,255,255,0) 6px 13px);
+    }
+
+    /* ===== 界面 ===== */
+    .back {
+      position: fixed; top: 18px; left: 18px; z-index: 99990;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 16px; border-radius: 100px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.28);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      color: #d9ecff; font-size: .92rem; text-decoration: none;
+      box-shadow: 0 8px 20px -8px rgba(0,0,0,.6);
+      transition: transform .2s, background .2s;
+      cursor: pointer;
+    }
+    .back:hover { transform: translateY(-2px); background: rgba(255,255,255,.18); }
+
+    /* ===== 侧面上方的操作说明 ===== */
+    .guide {
+      position: fixed; top: 18px; right: 18px; z-index: 99990;
+      padding: 13px 18px; border-radius: 18px;
+      display: grid; grid-template-columns: auto auto;
+      column-gap: 22px; row-gap: 9px; align-items: baseline;
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .22);
+      backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%);
+      box-shadow: 0 12px 26px -12px rgba(0, 0, 0, .7), inset 0 1px 2px rgba(255, 255, 255, .25);
+      font-size: .82rem; letter-spacing: .5px; color: #d9ecff;
+      pointer-events: none; white-space: nowrap;
+    }
+    .guide .k { color: #9fc3dd; }
+    .guide .v { color: #fff3c4; font-weight: 600; }
+
+    @media (max-width: 500px) {
+      .guide { top: 12px; right: 12px; padding: 10px 13px; font-size: .72rem; column-gap: 14px; row-gap: 7px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="back" href="czmBirthdayCard.html" onclick="if (document.referrer) { history.back(); return false; }">← 回贺卡</a>
+
+  <div id="custom-cursor">🏸</div>
+
+  <div id="interactive-shuttle">
+    <div class="shuttle-feather"></div>
+    <div class="shuttle-cork"></div>
+  </div>
+
+  <div class="floating-bg">
+    <div class="deco" style="top: 8%; left: 6%; animation-delay: 0s;">🎾</div>
+    <div class="deco math-symbol" style="top: 66%; left: 10%; animation-delay: .7s;">∑</div>
+    <div class="deco" style="bottom: 14%; right: 12%; animation-delay: 2.3s;">🎾</div>
+    <div class="deco math-symbol" style="top: 36%; right: 18%; animation-delay: 1.8s;">π</div>
+    <div class="deco math-symbol" style="bottom: 22%; right: 36%; animation-delay: 3.1s; font-size: 2.8rem;">∞</div>
+  </div>
+
+  <div class="ground" aria-hidden="true"></div>
+  <div id="badminton-net" aria-hidden="true"></div>
+
+  <div class="guide" aria-label="操作说明">
+    <span class="k">鼠标（拖动）</span><span class="v">挥拍/击球</span>
+    <span class="k">鼠标（左键）</span><span class="v">托球/上抛</span>
+  </div>
+
+  <script>
+    function playTone(frequency, duration = 0.15) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine'; osc.frequency.value = frequency;
+        gain.gain.value = 0.1; osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(); gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+        osc.stop(ctx.currentTime + duration); setTimeout(() => ctx.close(), 300);
+      } catch (e) {}
+    }
+
+    (function () {
+      const cursorEl = document.getElementById('custom-cursor');
+      const shuttleEl = document.getElementById('interactive-shuttle');
+      const netEl = document.getElementById('badminton-net');
+
+      // === 鼠标追踪 ===
+      let mouseX = window.innerWidth / 2;
+      let mouseY = window.innerHeight / 2;
+      let prevMouseX = mouseX, prevMouseY = mouseY;
+      let mouseVX = 0, mouseVY = 0;
+      let mouseSpeed = 0;
+      let currentAngle = 0;
+      let restingOnRacket = false;   // 球是否正停在拍面上
+      let launchCooldown = 0;        // 刚抛出去的几帧内跳过拍面判定
+
+      // === 羽毛球状态 ===
+      let shX = window.innerWidth / 2 - 120;
+      let shY = window.innerHeight * 0.25;
+      let shVX = 0, shVY = 0;
+      const shRadius = 20;
+
+      // === 物理参数 ===
+      const FRICTION = 0.965;      // 空气阻力（越小越"飘"，之前 0.95 掉速太快）
+      const WALL_BOUNCE = 0.7;     // 撞墙保留 70%
+      const FLOOR_BOUNCE = 0.3;    // 撞地板保留 30%（衰减 70%）
+      const GRAVITY = 0.25;
+
+      const HIT_RADIUS = 40;       // 击球范围：拍面靠近球就能打到（球半径 20 + 一点余量）
+      const SWING_THRESHOLD = 5;   // 低于这个速度算"慢挥/静止"
+
+      const SWING_POWER = 1.35;    // 挥拍传给球的初速度系数
+      const SWING_LIFT = 2.5;      // 挑球给的向上分量
+      const LAUNCH_SPEED = 15;     // 球停在拍面上时点击，竖直向上抛出的初速度
+      const CATCH_HALF_W = 18;     // 球落在拍面上的横向容差
+
+      // === 地板：离屏幕底部留出距离 ===
+      const FLOOR_GAP_RATIO = 0.12;
+      const FLOOR_GAP_MIN = 72;
+      const FLOOR_GAP_MAX = 180;
+      function getFloorY() {
+        const gap = Math.min(Math.max(window.innerHeight * FLOOR_GAP_RATIO, FLOOR_GAP_MIN), FLOOR_GAP_MAX);
+        return window.innerHeight - gap;
+      }
+
+      // === 标准羽毛球网比例 ===
+      // 立柱 1.55m，网布纵向深度 0.76m，顶部白色网带 0.075m
+      const NET_FABRIC_RATIO = 0.76 / 1.55;   // ≈ 0.4903：这一段有碰撞
+      const NET_TAPE_RATIO = 0.075 / 1.55;    // ≈ 0.0484：顶部网带（视觉）
+
+      let netRect = null;
+      function syncLayout() {
+        const gap = window.innerHeight - getFloorY();
+        document.documentElement.style.setProperty('--floor-gap', gap + 'px');
+
+        const h = Math.min(Math.max(window.innerHeight * 0.34, 160), 300);
+        document.documentElement.style.setProperty('--net-h', h + 'px');
+
+        const r = netEl.getBoundingClientRect();
+        netRect = {
+          x: r.left + r.width / 2,
+          half: r.width / 2,
+          top: r.top,
+          bottom: r.top + r.height * NET_FABRIC_RATIO   // 只有网布这一段是实体
+        };
+      }
+      syncLayout();
+      window.addEventListener('resize', syncLayout);
+
+      // === 烟花 ===
+      const FIREWORK_THRESHOLD = 25;
+      let fireworkParticles = [];
+      let fireworkCooldown = 0;
+
+      document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+
+      // === 左键：慢速贴近球 → 托住；球已在拍上 → 竖直抛起 ===
+      document.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+
+        if (restingOnRacket) {
+          restingOnRacket = false;
+          launchCooldown = 12;      // 抛出去先脱离拍面判定，避免立刻又被吸住
+          shX = mouseX;
+          shY = mouseY;
+          shVX = 0;
+          shVY = -LAUNCH_SPEED;     // 正上方
+          playTone(780, 0.09);
+          return;
+        }
+
+        const dx = mouseX - shX, dy = mouseY - shY;
+        if (Math.sqrt(dx * dx + dy * dy) < HIT_RADIUS && mouseSpeed <= SWING_THRESHOLD) {
+          restingOnRacket = true;   // 拍子没在挥，就把它接住
+          shX = mouseX;
+          shY = mouseY;
+          shVX = 0;
+          shVY = 0;
+          playTone(520, 0.06);
+        }
+      });
+
+      function updateCursor() {
+        mouseVX = mouseX - prevMouseX;
+        mouseVY = mouseY - prevMouseY;
+        mouseSpeed = Math.sqrt(mouseVX * mouseVX + mouseVY * mouseVY);
+
+        let targetAngle = 0;
+        if (mouseSpeed > 1) targetAngle = Math.atan2(mouseVY, mouseVX) * (180 / Math.PI) - 45;
+        currentAngle += (targetAngle - currentAngle) * 0.2;
+        cursorEl.style.transform = `translate(${mouseX - 25}px, ${mouseY - 25}px) rotate(${currentAngle}deg)`;
+
+        // === 拍面与球的接触 ===
+        const dx = mouseX - shX, dy = mouseY - shY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (launchCooldown > 0) {
+          /* 刚抛出去：这一段不参与拍面判定，让球先飞离 */
+          launchCooldown--;
+        } else if (restingOnRacket) {
+          /* 0) 球托在拍面上：贴图重合，跟着鼠标走 */
+          shX = mouseX;
+          shY = mouseY;
+          shVX = 0;
+          shVY = 0;
+        } else if (mouseSpeed > SWING_THRESHOLD && dist < HIT_RADIUS) {
+          /* 1) 挥拍抽球（初速度比之前收了一点） */
+          shVX = mouseVX * SWING_POWER;
+          shVY = mouseVY * SWING_POWER - SWING_LIFT;
+          playTone(660, 0.08);
+          prevMouseX = mouseX;
+          prevMouseY = mouseY;
+        } else if (mouseSpeed <= SWING_THRESHOLD && shVY > 0 &&
+                   dy > -(shRadius + 6) && dy < shRadius && Math.abs(dx) < CATCH_HALF_W) {
+          /* 2) 拍子基本不动，球从拍头正上方落下来 → 落进拍面 */
+          restingOnRacket = true;
+          shX = mouseX;
+          shY = mouseY;
+          shVX = 0;
+          shVY = 0;
+        } else if (dist < HIT_RADIUS && dist > 0.5) {
+          /* 3) 斜着/从侧下方碰到：推开，不让球卡进拍面里 */
+          const nx = dx / dist, ny = dy / dist;   // 由球指向拍心
+
+          const pen = HIT_RADIUS - dist;
+          shX -= nx * pen;
+          shY -= ny * pen;
+          const vin = shVX * nx + shVY * ny;       // 朝拍面里钻的速度分量（正=正在往里走）
+          if (vin > 0) {
+            shVX -= vin * nx;
+            shVY -= vin * ny;
+          }
+        }
+
+        prevMouseX = mouseX;
+        prevMouseY = mouseY;
+        requestAnimationFrame(updateCursor);
+      }
+      requestAnimationFrame(updateCursor);
+
+      function spawnFirework() {
+        const count = Math.floor(Math.random() * 4) + 3;   // 3~6 个
+        const centerX = Math.random() * (window.innerWidth - 200) + 100;
+        const centerY = Math.random() * (window.innerHeight - 200) + 100;
+        const emojis = ['🎉', '✨', '🎂', '❤️', '🏸', '🎾', '∑', 'π', '🌟'];
+
+        for (let i = 0; i < count; i++) {
+          const el = document.createElement('div');
+          el.className = 'firework-particle';
+          el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          el.style.fontSize = (Math.random() * 15 + 20) + 'px';
+          document.body.appendChild(el);
+
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 8 + 4;
+
+          fireworkParticles.push({
+            el, x: centerX, y: centerY,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 3,
+            life: 1,
+            decay: Math.random() * 0.01 + 0.015
+          });
+        }
+        playTone(1200, 0.15);
+        setTimeout(() => playTone(1600, 0.1), 80);
+      }
+
+      function updateFireworks() {
+        for (let i = fireworkParticles.length - 1; i >= 0; i--) {
+          const p = fireworkParticles[i];
+          p.vy += 0.15;
+          p.vx *= 0.98;
+          p.vy *= 0.98;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.life -= p.decay;
+
+          if (p.life <= 0) {
+            p.el.remove();
+            fireworkParticles.splice(i, 1);
+          } else {
+            p.el.style.opacity = p.life;
+            p.el.style.transform = `translate(${p.x}px, ${p.y}px) rotate(${p.x * 2}deg) scale(${p.life})`;
+          }
+        }
+        requestAnimationFrame(updateFireworks);
+      }
+      requestAnimationFrame(updateFireworks);
+
+      function checkSpeedForFirework() {
+        const speed = Math.sqrt(shVX * shVX + shVY * shVY);
+        if (speed > FIREWORK_THRESHOLD && fireworkCooldown <= 0) {
+          spawnFirework();
+          fireworkCooldown = 30;
+        }
+      }
+
+      function updatePhysics() {
+        // 0. 球托在拍面上：完全跟随鼠标，不受重力、墙、网、地面的影响
+        if (restingOnRacket) {
+          shX = mouseX;
+          shY = mouseY;
+          shVX = 0;
+          shVY = 0;
+          shuttleEl.style.transform = `translate(${shX - 20}px, ${shY - 20}px) rotate(90deg)`;
+          requestAnimationFrame(updatePhysics);
+          return;
+        }
+
+        // 1. 阻力
+        shVX *= FRICTION;
+        shVY *= FRICTION;
+
+        // 2. 重力
+        shVY += GRAVITY;
+
+        // 3. 位置更新（先记上一帧，用于网面穿透与"落在网顶"的判定）
+        const prevX = shX, prevY = shY;
+        shX += shVX;
+        shY += shVY;
+
+        // 4. 四面墙（墙壁衰减 30%）
+        if (shX - shRadius < 0) {
+          shX = shRadius; shVX *= -WALL_BOUNCE; checkSpeedForFirework();
+        }
+        if (shX + shRadius > window.innerWidth) {
+          shX = window.innerWidth - shRadius; shVX *= -WALL_BOUNCE; checkSpeedForFirework();
+        }
+        if (shY - shRadius < 0) {
+          shY = shRadius; shVY *= -WALL_BOUNCE; checkSpeedForFirework();
+        }
+
+        // 5. 球网：只有网布（顶部 49.03%）是实体，网布下方 ~51% 直接穿过
+        if (netRect) {
+          const overlapX = shX + shRadius > netRect.x - netRect.half && shX - shRadius < netRect.x + netRect.half;
+          const overlapY = shY + shRadius > netRect.top && shY - shRadius < netRect.bottom;
+          if (overlapX && overlapY) {
+            const landedOnTop = prevY + shRadius <= netRect.top + 0.5;   // 从上方落下来
+            const fromBelow = prevY - shRadius >= netRect.bottom;        // 从下方顶上来
+            const crossed = (prevX < netRect.x) !== (shX < netRect.x);    // 一帧之内穿过网线
+
+            if (landedOnTop && !crossed) {
+              /* 落在网顶：与撞地板完全一致——法向只留 30%，切向摩擦 0.85 */
+              shY = netRect.top - shRadius;
+              shVY *= -FLOOR_BOUNCE;
+              shVX *= 0.85;
+              if (Math.abs(shVY) < 0.8) shVY = 0;
+              /* 滚网：轻轻搭在网顶时不会停在 4px 的线上，顺着原方向滚过网 */
+              if (Math.abs(shVX) < 1.2) shVX = (shVX < 0 ? -1 : 1) * 1.2;
+              checkSpeedForFirework();
+            } else if (fromBelow) {
+              /* 从下方顶到网布底边：竖直方向按地板衰减 */
+              shY = netRect.bottom + shRadius;
+              shVY = Math.abs(shVY) * FLOOR_BOUNCE;
+              shVX *= 0.85;
+              checkSpeedForFirework();
+            } else {
+              /* 侧面撞网：法向（横向）只留 30%，切向（竖直）摩擦 0.85 —— 与地板一致，不是墙壁的 70% */
+              const fromLeft = prevX < netRect.x;
+              const side = fromLeft ? -1 : 1;
+              shX = netRect.x + side * (netRect.half + shRadius);
+              shVX = side * Math.abs(shVX) * FLOOR_BOUNCE;
+              shVY *= 0.85;
+              if (Math.abs(shVX) < 0.8) shVX = side * 0.8;   // 防止贴在网上不动
+              checkSpeedForFirework();
+            }
+          }
+        }
+
+        // 6. 地板（离屏幕底部留出距离）
+        const floorY = getFloorY();
+        if (shY + shRadius > floorY) {
+          shY = floorY - shRadius;
+          shVY *= -FLOOR_BOUNCE;
+          shVX *= 0.85;
+          if (Math.abs(shVY) < 0.8) shVY = 0;
+          if (Math.abs(shVX) < 0.35) shVX = 0;   // 让球最终能停下来
+          checkSpeedForFirework();
+        }
+
+        // 7. 限速，防止穿透
+        let speed = Math.sqrt(shVX * shVX + shVY * shVY);
+        if (speed > 60) {
+          shVX = (shVX / speed) * 60;
+          shVY = (shVY / speed) * 60;
+          speed = 60;
+        }
+
+        // 8. 速度触发烟花
+        if (fireworkCooldown > 0) fireworkCooldown--;
+        else if (speed > FIREWORK_THRESHOLD) {
+          spawnFirework();
+          fireworkCooldown = 30;
+        }
+
+        // 9. 渲染
+        let angle = Math.atan2(shVY, shVX) * (180 / Math.PI);
+        if (shVX === 0 && shVY === 0) angle = 0;
+        shuttleEl.style.transform = `translate(${shX - 20}px, ${shY - 20}px) rotate(${angle + 90}deg)`;
+
+        requestAnimationFrame(updatePhysics);
+      }
+      requestAnimationFrame(updatePhysics);
+    })();
+  </script>
+</body>
+</html>
