@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🎂 ℋ𝒶𝓅𝓅𝓎 ℬ𝒾𝓇𝓉𝒽𝒹𝒶𝓎 🎂</title>
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
-  
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -22,63 +22,6 @@
       padding: 16px;
       position: relative;
       overflow: hidden;
-      cursor: none; /* 隐藏默认鼠标 */
-    }
-
-    /* ===== 自定义鼠标指针 (球拍) ===== */
-    #custom-cursor {
-      position: fixed;
-      top: 0; left: 0;
-      width: 50px; height: 50px;
-      font-size: 42px;
-      line-height: 50px;
-      text-align: center;
-      pointer-events: none;
-      z-index: 99999;
-      transform-origin: 30% 70%;
-      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
-      will-change: transform;
-    }
-
-    /* ===== 被击打的羽毛球 (纯 CSS) ===== */
-    #interactive-shuttle {
-      position: fixed;
-      top: 0; left: 0;
-      width: 40px; height: 40px;
-      pointer-events: none;
-      z-index: 99998;
-      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5));
-      will-change: transform;
-      transform: translate(calc(50vw - 20px), calc(50vh - 20px));
-    }
-    .shuttle-feather {
-      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
-      width: 24px; height: 22px; background: #f0f4f8;
-      clip-path: polygon(20% 0, 80% 0, 100% 100%, 0% 100%);
-      border-radius: 4px 4px 0 0; box-shadow: inset 0 -4px 6px rgba(0,0,0,0.1);
-    }
-    .shuttle-feather::after {
-      content: ''; position: absolute; inset: 0;
-      background: repeating-linear-gradient(90deg, transparent, transparent 5px, rgba(180, 190, 200, 0.4) 5px, rgba(180, 190, 200, 0.4) 6px);
-      clip-path: polygon(20% 0, 80% 0, 100% 100%, 0% 100%);
-    }
-    .shuttle-cork {
-      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-      width: 18px; height: 16px;
-      background: radial-gradient(circle at 30% 30%, #fff, #e0e0e0);
-      border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
-      border: 2px solid #c0392b; box-shadow: 0 2px 4px rgba(0,0,0,0.4); z-index: 2;
-    }
-
-    /* ===== 烟花粒子 ===== */
-    .firework-particle {
-      position: fixed !important;
-      top: 0; left: 0;
-      pointer-events: none;
-      z-index: 99997;
-      user-select: none;
-      will-change: transform, opacity;
-      font-size: 1.5rem;
     }
 
     /* ===== 漂浮装饰背景 ===== */
@@ -166,7 +109,7 @@
     .ball { cursor: pointer; transition: transform 0.2s, filter 0.2s; filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.5)); animation: bounce 2.2s infinite; font-size: 2.8rem; line-height: 1; }
     .ball:hover { transform: scale(1.15) rotate(3deg); filter: drop-shadow(0 8px 12px rgba(255, 215, 0, 0.6)); }
     .tennis { animation-delay: 0s; }
-    .shuttle { animation-delay: 0.4s; }
+    .shuttle-ball { animation-delay: 0.4s; }
     .math-icon { animation-delay: 0.8s; font-size: 2.8rem; font-weight: 800; color: #b3e4ff; }
     @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
@@ -175,6 +118,58 @@
       margin-top: 1.5rem; font-size: 0.8rem; color: #9bb8cf;
       display: flex; justify-content: center; gap: 1.2rem;
       flex-wrap: wrap; border-top: 1px solid rgba(255, 255, 255, 0.15); padding-top: 1.2rem;
+    }
+
+    /* ===== 左侧小程序式圆形入口 ===== */
+    .mini-entry {
+      position: fixed;
+      left: max(18px, calc(50% - 452px));
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 30;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      text-decoration: none;
+    }
+    .mini-entry .bubble {
+      position: relative;
+      width: 76px; height: 76px; border-radius: 50%;
+      display: grid; place-items: center;
+      font-size: 34px; line-height: 1;
+      background: radial-gradient(circle at 32% 26%, rgba(255,255,255,.42), rgba(255,255,255,.12) 68%);
+      border: 1px solid rgba(255, 255, 255, .45);
+      backdrop-filter: blur(14px) saturate(150%); -webkit-backdrop-filter: blur(14px) saturate(150%);
+      box-shadow: 0 12px 26px -10px rgba(0,0,0,.7), inset 0 1px 2px rgba(255,255,255,.6);
+      transition: transform .28s cubic-bezier(.2,.9,.3,1.2), box-shadow .28s;
+    }
+    /* 呼吸光环 */
+    .mini-entry .bubble::after {
+      content: ""; position: absolute; inset: -7px; border-radius: 50%;
+      border: 1px solid rgba(255, 215, 0, .35);
+      animation: entryPulse 2.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes entryPulse {
+      0%, 100% { transform: scale(.94); opacity: .35; }
+      50% { transform: scale(1.05); opacity: .9; }
+    }
+    .mini-entry:hover .bubble {
+      transform: translateY(-3px) scale(1.06);
+      box-shadow: 0 18px 34px -12px rgba(255,215,0,.55), inset 0 1px 2px rgba(255,255,255,.7);
+    }
+    .mini-entry .cap {
+      font-size: 0.78rem; letter-spacing: 1px; color: #d9ecff;
+      background: rgba(4, 26, 42, .6);
+      padding: 5px 12px; border-radius: 100px;
+      border: 1px solid rgba(255,255,255,.18);
+      white-space: nowrap;
+      transition: background .25s, color .25s;
+    }
+    .mini-entry:hover .cap { background: rgba(255, 215, 0, .2); color: #fff3c4; }
+
+    @media (max-width: 920px) {
+      .mini-entry { left: 14px; top: auto; bottom: 14px; transform: none; gap: 8px; }
+      .mini-entry .bubble { width: 58px; height: 58px; font-size: 26px; }
+      .mini-entry .cap { font-size: 0.7rem; padding: 4px 10px; }
     }
 
     @media (max-width: 500px) {
@@ -191,13 +186,6 @@
   </style>
 </head>
 <body>
-  <div id="custom-cursor">🏸</div>
-  
-  <div id="interactive-shuttle">
-    <div class="shuttle-feather"></div>
-    <div class="shuttle-cork"></div>
-  </div>
-
   <div class="floating-bg">
     <div class="deco" style="top: 8%; left: 5%; animation-delay: 0s;">🎾</div>
     <div class="deco math-symbol" style="top: 70%; left: 12%; animation-delay: 0.7s;">∑</div>
@@ -205,6 +193,12 @@
     <div class="deco math-symbol" style="top: 40%; right: 22%; animation-delay: 1.8s;">π</div>
     <div class="deco math-symbol" style="bottom: 18%; right: 40%; animation-delay: 3.1s; font-size: 2.8rem;">∞</div>
   </div>
+
+  <!-- 左侧圆形小程序式入口：进入羽毛球小游戏 -->
+  <a class="mini-entry" href="game.html" title="进入羽毛球小游戏">
+    <span class="bubble">🏸</span>
+    <span class="cap">羽毛球小游戏</span>
+  </a>
 
   <main class="card">
     <div class="sport-math-row">
@@ -214,7 +208,7 @@
     </div>
 
     <h1 class="birthday-title">HAPPY BIRTHDAY</h1>
-    
+
     <div class="subhead">
       🎉 <span class="en-name">To: Master</span> 陈子木 🎉
     </div>
@@ -234,10 +228,10 @@
 
     <div class="ball-row">
       <div class="ball tennis" title="点击网球有惊喜" onclick="playSoundAndAlert('tennis')">🎾</div>
-      <div class="ball shuttle" title="点击羽毛球有惊喜" onclick="playSoundAndAlert('shuttle')">🏸</div>
+      <div class="ball shuttle-ball" title="点击羽毛球有惊喜" onclick="playSoundAndAlert('shuttle')">🏸</div>
       <div class="ball math-icon" title="点击数学符号有惊喜" onclick="playSoundAndAlert('math')">∑</div>
     </div>
-    <div class="click-note">🏸 移动鼠标挥动球拍，用力把羽毛球打飞吧！触发超快球速会有烟花哦！</div>
+    <div class="click-note">🏸 想亲自上场？点左边那颗圆形按钮，进去挥拍、打球、放烟花。</div>
 
     <div class="footer">
       <span>🏸 羽毛球</span><span>🎾 网球</span><span>📐 数学</span><span>❤️ 友谊</span>
@@ -246,7 +240,7 @@
 
   <script>
     // ==========================================
-    // 1. 原有互动音效与提示
+    // 互动音效与提示
     // ==========================================
     function playTone(frequency, duration = 0.15) {
       try {
@@ -292,235 +286,6 @@
       document.body.appendChild(toast);
       setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 2000);
     }
-
-    // ==========================================
-    // 2. 🏸 物理引擎 & 烟花系统
-    // ==========================================
-    (function() {
-      const cursorEl = document.getElementById('custom-cursor');
-      const shuttleEl = document.getElementById('interactive-shuttle');
-      
-      // === 鼠标追踪 ===
-      let mouseX = window.innerWidth / 2;
-      let mouseY = window.innerHeight / 2;
-      let prevMouseX = mouseX;
-      let prevMouseY = mouseY;
-      let mouseVX = 0, mouseVY = 0;
-      let currentAngle = 0;
-
-      // === 羽毛球物理 ===
-      let shX = window.innerWidth / 2;
-      let shY = window.innerHeight / 2;
-      let shVX = 0;
-      let shVY = 0;
-      let shRadius = 20; 
-
-      // === 物理参数 ===
-      const FRICTION = 0.95;       // 空气阻力
-      const WALL_BOUNCE = 0.7;     // 撞墙反弹保留70%速度 (衰减30%)
-      const FLOOR_BOUNCE = 0.3;    // 撞地板反弹保留30%速度 (衰减70%)
-      const GRAVITY = 0.25;        // 重力
-      
-      const HIT_RADIUS = 30;       // 击球范围：基本要拍到球（球半径20 + 少量余量）才触发
-      const SWING_THRESHOLD = 5;   // 挥拍速度阈值
-
-      // === 底部边界：离屏幕最底部留出距离 ===
-      // 地板不再贴着屏幕最底边，按屏高 12% 留白，并限制在 72~180px 之间
-      const FLOOR_GAP_RATIO = 0.12;
-      const FLOOR_GAP_MIN = 72;
-      const FLOOR_GAP_MAX = 180;
-      function getFloorY() {
-        const gap = Math.min(Math.max(window.innerHeight * FLOOR_GAP_RATIO, FLOOR_GAP_MIN), FLOOR_GAP_MAX);
-        return window.innerHeight - gap;
-      }
-
-      // === 烟花系统变量 ===
-      const FIREWORK_THRESHOLD = 25; // 羽毛球速度超过这个值触发烟花
-      let fireworkParticles = [];
-      let fireworkCooldown = 0;      // 冷却时间，防止一次击球无限触发
-
-      // === 鼠标移动 ===
-      document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-      });
-
-      // === 计算与更新鼠标 ===
-      function updateCursor() {
-        mouseVX = mouseX - prevMouseX;
-        mouseVY = mouseY - prevMouseY;
-        let mouseSpeed = Math.sqrt(mouseVX*mouseVX + mouseVY*mouseVY);
-        
-        let targetAngle = 0;
-        if (mouseSpeed > 1) {
-          targetAngle = Math.atan2(mouseVY, mouseVX) * (180 / Math.PI) - 45; 
-        }
-        currentAngle += (targetAngle - currentAngle) * 0.2;
-        cursorEl.style.transform = `translate(${mouseX - 25}px, ${mouseY - 25}px) rotate(${currentAngle}deg)`;
-
-        // 击球判定
-        let dx = mouseX - shX;
-        let dy = mouseY - shY;
-        let dist = Math.sqrt(dx*dx + dy*dy);
-        
-        if (dist < HIT_RADIUS && mouseSpeed > SWING_THRESHOLD) {
-          shVX = mouseVX * 1.5; 
-          shVY = mouseVY * 1.5;
-          shVY -= 3; // 挑球
-
-          playTone(660, 0.08); 
-          
-          prevMouseX = mouseX;
-          prevMouseY = mouseY;
-        }
-
-        prevMouseX = mouseX;
-        prevMouseY = mouseY;
-        requestAnimationFrame(updateCursor);
-      }
-      requestAnimationFrame(updateCursor);
-
-      // === 烟花生成函数 ===
-      function spawnFirework() {
-        // 每次随机生成 3~6 个烟花粒子（更克制，不糊屏）
-        const count = Math.floor(Math.random() * 4) + 3;
-        // 随机中心点（避开最边缘）
-        const centerX = Math.random() * (window.innerWidth - 200) + 100;
-        const centerY = Math.random() * (window.innerHeight - 200) + 100;
-        const emojis = ['🎉', '✨', '🎂', '❤️', '🏸', '🎾', '∑', 'π', '🌟'];
-
-        for (let i = 0; i < count; i++) {
-          const el = document.createElement('div');
-          el.className = 'firework-particle';
-          el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-          el.style.fontSize = (Math.random() * 15 + 20) + 'px';
-          document.body.appendChild(el);
-
-          // 物理属性：从中心向四周炸开
-          const angle = Math.random() * Math.PI * 2;
-          const speed = Math.random() * 8 + 4; // 爆发速度
-
-          fireworkParticles.push({
-            el: el,
-            x: centerX,
-            y: centerY,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed - 3, // 给一点向上的初始速度
-            life: 1,
-            decay: Math.random() * 0.01 + 0.015 // 约 1~2 秒消失
-          });
-        }
-        
-        // 加一点音效反馈（高音）
-        playTone(1200, 0.15);
-        setTimeout(() => playTone(1600, 0.1), 80);
-      }
-
-      // === 更新烟花物理 ===
-      function updateFireworks() {
-        for (let i = fireworkParticles.length - 1; i >= 0; i--) {
-          const p = fireworkParticles[i];
-          
-          // 物理运动
-          p.vy += 0.15; // 烟花受轻微重力
-          p.vx *= 0.98; // 阻力
-          p.vy *= 0.98;
-          p.x += p.vx;
-          p.y += p.vy;
-
-          // 生命衰减
-          p.life -= p.decay;
-
-          if (p.life <= 0) {
-            p.el.remove();
-            fireworkParticles.splice(i, 1);
-          } else {
-            // 不检测碰壁反弹，自由下坠，透明度随生命值变化
-            p.el.style.opacity = p.life;
-            p.el.style.transform = `translate(${p.x}px, ${p.y}px) rotate(${p.x * 2}deg) scale(${p.life})`;
-          }
-        }
-        requestAnimationFrame(updateFireworks);
-      }
-      requestAnimationFrame(updateFireworks);
-
-      // === 羽毛球主物理循环 ===
-      function updatePhysics() {
-        // 1. 阻力
-        shVX *= FRICTION;
-        shVY *= FRICTION;
-
-        // 2. 重力
-        shVY += GRAVITY;
-
-        // 3. 更新位置
-        shX += shVX;
-        shY += shVY;
-
-        // 4. 边缘碰撞检测
-        // 左墙 (墙壁衰减)
-        if (shX - shRadius < 0) {
-          shX = shRadius;
-          shVX *= -WALL_BOUNCE;
-          checkSpeedForFirework();
-        }
-        // 右墙 (墙壁衰减)
-        if (shX + shRadius > window.innerWidth) {
-          shX = window.innerWidth - shRadius;
-          shVX *= -WALL_BOUNCE;
-          checkSpeedForFirework();
-        }
-        // 天花板 (墙壁衰减)
-        if (shY - shRadius < 0) {
-          shY = shRadius;
-          shVY *= -WALL_BOUNCE;
-          checkSpeedForFirework();
-        }
-        // 地板 (离屏幕底部留出距离，不再是屏幕最底边)
-        const floorY = getFloorY();
-        if (shY + shRadius > floorY) {
-          shY = floorY - shRadius;
-          shVY *= -FLOOR_BOUNCE; // 地板衰减 70%
-          shVX *= 0.85;          // 地板的摩擦力
-          if (Math.abs(shVY) < 0.8) shVY = 0;
-          checkSpeedForFirework();
-        }
-
-        // 5. 限制最大速度，防止穿透
-        let currentSpeed = Math.sqrt(shVX*shVX + shVY*shVY);
-        if (currentSpeed > 60) {
-          shVX = (shVX / currentSpeed) * 60;
-          shVY = (shVY / currentSpeed) * 60;
-        }
-
-        // 6. 速度触发烟花判定 (冷却防止频发)
-        if (fireworkCooldown > 0) {
-          fireworkCooldown--;
-        } else if (currentSpeed > FIREWORK_THRESHOLD) {
-          spawnFirework();
-          fireworkCooldown = 30; // 冷却 0.5 秒（30帧）
-        }
-
-        // 7. 更新 DOM 角度
-        let angle = Math.atan2(shVY, shVX) * (180 / Math.PI);
-        if (shVX === 0 && shVY === 0) angle = 0; 
-        shuttleEl.style.transform = `translate(${shX - 20}px, ${shY - 20}px) rotate(${angle + 90}deg)`;
-
-        requestAnimationFrame(updatePhysics);
-      }
-      
-      // 辅助函数：碰壁瞬间也检查一下速度
-      function checkSpeedForFirework() {
-        let speed = Math.sqrt(shVX*shVX + shVY*shVY);
-        if (speed > FIREWORK_THRESHOLD && fireworkCooldown <= 0) {
-          spawnFirework();
-          fireworkCooldown = 30;
-        }
-      }
-
-      requestAnimationFrame(updatePhysics);
-
-    })();
   </script>
 </body>
 </html>
